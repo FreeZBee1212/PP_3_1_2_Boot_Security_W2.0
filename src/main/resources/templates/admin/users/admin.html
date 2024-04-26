@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin page</title>
+</head>
+<body>
+
+<div>
+    <label>Ваш ID:</label>
+    <span th:text="${user.getId()}"></span>
+</div>
+
+<div>
+    <label>Ваша роль:</label>
+    <span th:text="${user.getROLE()}"></span>
+</div>
+
+<div>
+    <label>Ваше имя:</label>
+    <span th:text="${user.getUsername}"></span>
+</div>
+
+<div>
+    <label>Ваша фамилия:</label>
+    <span th:text="${user.getSurname}"></span>
+</div>
+
+<div>
+    <label>Ваш возраст:</label>
+    <span th:text="${user.getAge}"></span>
+</div>
+
+<br>
+    <a th:href="@{/admin/users/new}">Create new User</a>
+<br>
+    <a th:href="@{/admin/users}">Список пользователей</a>
+
+<br>
+    <a href="/logout">Logout</a>
+
+</body>
+</html>
