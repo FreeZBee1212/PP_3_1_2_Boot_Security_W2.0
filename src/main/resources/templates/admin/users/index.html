@@ -12,7 +12,7 @@
 
   <b> Имя пользователя: </b> <a th:href="@{/admin/users/id(id=${user.getId()})}" th:text="${user.getUsername()}">user</a>
     <a th:text="${user.getSurname()}">user</a>
-   <b> Роль пользователя: </b> <a th:text="${user.getROLE()}">user</a>
+   <b> Роль пользователя: </b> <a th:text="${user.getRoles()}">user</a>
 
 </div>
 

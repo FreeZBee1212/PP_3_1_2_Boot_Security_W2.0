@@ -7,13 +7,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "id", unique = true)
+    private Long id;
     @Column
     private String username;
     @Column
@@ -23,30 +25,30 @@ public class User implements UserDetails {
     @Column
     private String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER,
+            cascade = {CascadeType.MERGE})
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles = new HashSet<>();
+    private Set<Role> roles;
 
 
-    @Column
-    private String ROLE;
+//    @Column
+//    private String ROLE;
 
 
     public User() {
     }
 
-    public User(String username, String surname, int age, String password, String ROLE) {
+    public User(String username, String surname, int age, String password, Set<Role> roles) {
         this.username = username;
         this.surname = surname;
         this.age = age;
         this.password = password;
-        this.ROLE = ROLE;
+        this.roles = roles;
     }
-
 
     public Set<Role> getRoles() {
         return roles;
@@ -65,11 +67,11 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -89,22 +91,28 @@ public class User implements UserDetails {
         this.age = age;
     }
 
-    public String getROLE() {
-        return ROLE;
-    }
 
-    public void setROLE(String ROLE) {
-        this.ROLE = ROLE;
+    public void setRoles(String[] roles) {
+        Set<Role> roleSet = new HashSet<>();
+        for (String role : roles) {
+            if (role != null) {
+                if (role.equals("ROLE_ADMIN")) {
+                    roleSet.add(new Role(1L, role));
+                }
+                if (role.equals("ROLE_USER")) {
+                    roleSet.add(new Role(2L, role));
+                }
+            }
+            this.roles = roleSet;
+        }
     }
-
 
     // Реализация методов интерфейса UserDetails
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(getROLE()));
-//        return roles; // Возвращает коллекцию ролей пользователя
+        return roles;
     }
 
     @Override
@@ -146,11 +154,23 @@ public class User implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return id == user.id && age == user.age && Objects.equals(username, user.username) && Objects.equals(surname, user.surname) && Objects.equals(password, user.password) && Objects.equals(roles, user.roles) && Objects.equals(ROLE, user.ROLE);
+        return id == user.id && age == user.age && Objects.equals(username, user.username) && Objects.equals(surname, user.surname) && Objects.equals(password, user.password) && Objects.equals(roles, user.roles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, surname, age, password, roles, ROLE);
+        return Objects.hash(id, username, surname, age, password, roles);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", surname='" + surname + '\'' +
+                ", age=" + age +
+                ", password='" + password + '\'' +
+                ", roles=" + roles +
+                '}';
     }
 }

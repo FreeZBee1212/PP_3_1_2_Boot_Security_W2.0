@@ -7,8 +7,8 @@ import ru.kata.spring.boot_security.demo.model.User;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findByUsername(String username);
-
+public interface UserRepository extends JpaRepository<User, Long> {
+    User findByUsername(String username);
+//    Optional<User> findByUsernameOptional(String username);
 
 }

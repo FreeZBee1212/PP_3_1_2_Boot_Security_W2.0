@@ -9,39 +9,44 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.kata.spring.boot_security.demo.service.UserDetailsServiceImpl;
+import ru.kata.spring.boot_security.demo.service.UserServiceImpl;
+
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsServiceImpl userDetailsServiceImpl;
+    private final UserServiceImpl userServiceImpl;
+    private final SuccessUserHandler successUserHandler;
 
     @Autowired
-    public SecurityConfig(UserDetailsServiceImpl userDetailsServiceImpl) {
-        this.userDetailsServiceImpl = userDetailsServiceImpl;
+    public SecurityConfig(UserServiceImpl userServiceImpl, SuccessUserHandler successUserHandler) {
+        this.userServiceImpl = userServiceImpl;
+        this.successUserHandler = successUserHandler;
     }
 
+    public SecurityConfig(boolean disableDefaults, UserServiceImpl userServiceImpl, SuccessUserHandler successUserHandler) {
+        super(disableDefaults);
+        this.userServiceImpl = userServiceImpl;
+        this.successUserHandler = successUserHandler;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
         http.csrf().disable()       // Отключаем защиту от межсайтовой подделки запросов
                 .authorizeRequests()
-                .antMatchers("/admin/**").hasAnyRole("ADMIN", "ADMIN,ROLE_USER")
-                .antMatchers
-                        ("/auth/login", "/auth/registration", "/admin/users").permitAll()
+                .antMatchers("/user").hasAnyRole("ADMIN", "USER")
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user").permitAll()
+//                .anyRequest().authenticated()
                 .anyRequest().hasAnyRole("ADMIN", "USER")
                 .and()
-                .formLogin().loginPage("/auth/login")
-                .loginProcessingUrl("/process_login")
-//                .defaultSuccessUrl("/user", true)
-                .successHandler(new SuccessUserHandler())
-                .failureUrl("/auth/login?error")
+                .formLogin().successHandler(successUserHandler)
+                .permitAll()
                 .and()
                 .logout()
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/auth/login");
+                .permitAll();
 
     }
 
@@ -50,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     // Настраивает аутентификацию
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsServiceImpl);
+        auth.userDetailsService(userServiceImpl);
     }
 
     @Bean
